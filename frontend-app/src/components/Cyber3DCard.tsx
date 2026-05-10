@@ -5,6 +5,7 @@ import React from "react";
 interface Cyber3DCardProps {
   children: React.ReactNode;
   className?: string;
+  intensity?: string;
 }
 
 export default function Cyber3DCard({ children, className = "" }: Cyber3DCardProps) {
