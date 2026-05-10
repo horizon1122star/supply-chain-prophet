@@ -1,0 +1,485 @@
+
+<h2 class="sr-only">Interactive explainer for the Weather Agent in Supply Chain Prophet — covers APIs, data flow, thresholds, and shipping lane logic</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans,sans-serif);color:var(--color-text-primary);background:transparent;font-size:13px}
+.wrap{padding:16px 0 28px}
+.tabs{display:flex;gap:4px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:20px}
+.tab{padding:7px 14px;font-size:12px;font-weight:400;background:transparent;border:none;cursor:pointer;color:var(--color-text-secondary);border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all .15s}
+.tab.on{color:var(--color-text-primary);font-weight:500;border-bottom-color:var(--color-text-primary)}
+.pane{display:none}.pane.on{display:block}
+
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 16px;margin-bottom:10px}
+.card-warn{border-color:#BA7517;border-left:3px solid #BA7517;border-radius:0 var(--border-radius-lg) var(--border-radius-lg) 0}
+.card-info{border-left:3px solid #185FA5;border-radius:0 var(--border-radius-lg) var(--border-radius-lg) 0}
+.label{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-tertiary);margin-bottom:6px}
+.mono{font-family:var(--font-mono);font-size:11px;line-height:1.8;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.mono .k{color:#185FA5}.mono .s{color:#3B6D11}.mono .c{color:var(--color-text-tertiary)}.mono .w{color:#A32D2D}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px}
+.stat-val{font-size:22px;font-weight:500;line-height:1;margin-bottom:2px}
+.stat-lbl{font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em}
+
+.lane-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer;transition:background .1s;border-radius:4px}
+.lane-row:last-child{border-bottom:none}
+.lane-row:hover{background:var(--color-background-secondary)}
+.lane-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-left:4px}
+.lane-name{font-size:13px;font-weight:500;flex:1}
+.lane-coords{font-size:10px;color:var(--color-text-tertiary);font-family:var(--font-mono);min-width:120px}
+.lane-why{font-size:11px;color:var(--color-text-secondary);flex:2}
+.pill{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;white-space:nowrap}
+.ph{background:#FCEBEB;color:#A32D2D}
+.pm{background:#FAEEDA;color:#633806}
+.pl{background:#EAF3DE;color:#27500A}
+
+.flow-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;position:relative}
+.flow-step:not(:last-child)::after{content:'';position:absolute;left:17px;top:36px;bottom:-14px;width:1px;background:var(--color-border-tertiary)}
+.step-num{flex-shrink:0;width:34px;height:34px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500}
+.step-body{flex:1}
+.step-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.step-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+
+.thresh-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.thresh-row:last-child{border-bottom:none}
+.thresh-metric{font-size:12px;font-weight:500;width:150px;flex-shrink:0}
+.thresh-bar-wrap{flex:1;height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden;position:relative}
+.thresh-bar{height:100%;border-radius:3px;transition:width .3s}
+.thresh-val{font-size:11px;font-family:var(--font-mono);width:80px;text-align:right;color:var(--color-text-secondary)}
+.thresh-sev{width:60px;text-align:right;flex-shrink:0}
+
+.api-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;margin-bottom:8px}
+.api-name{font-size:13px;font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:7px}
+.api-badge{font-size:10px;padding:2px 8px;border-radius:10px}
+.api-desc{font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:6px}
+.api-url{font-size:11px;font-family:var(--font-mono);color:#185FA5}
+
+.sim-wrap{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:16px}
+.sim-output{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px;margin-top:12px;font-family:var(--font-mono);font-size:11px;line-height:1.9;min-height:80px}
+.sim-line{display:flex;gap:8px;align-items:center}
+.sim-line span{transition:color .2s}
+.hi{color:#A32D2D}.ok{color:#27500A}.warn{color:#633806}.dim{color:var(--color-text-tertiary)}
+.slider-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px}
+.slider-lbl{width:140px;color:var(--color-text-secondary);flex-shrink:0}
+.slider-val{width:52px;text-align:right;font-family:var(--font-mono);font-weight:500;color:var(--color-text-primary)}
+input[type=range]{flex:1}
+button.run{margin-top:10px;width:100%;height:34px;font-size:12px}
+</style>
+
+<div class="wrap">
+<div class="tabs">
+  <button class="tab on" onclick="sw(this,'overview')">Overview</button>
+  <button class="tab" onclick="sw(this,'apis')">APIs</button>
+  <button class="tab" onclick="sw(this,'lanes')">Shipping lanes</button>
+  <button class="tab" onclick="sw(this,'logic')">Thresholds</button>
+  <button class="tab" onclick="sw(this,'code')">Code</button>
+  <button class="tab" onclick="sw(this,'sim')">Simulator</button>
+</div>
+
+<div id="pane-overview" class="pane on">
+  <div class="label">What the weather agent does</div>
+  <div style="margin-bottom:16px">
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Receives company + scenario</div>
+        <div class="step-desc">Orchestrator calls the agent with e.g. "Apple Inc." + "Taiwan earthquake". The agent ignores the company name — its job is purely geographic. It maps the scenario to a set of shipping lanes that matter.</div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Queries Open-Meteo for each lane</div>
+        <div class="step-desc">Sends one async HTTP request per shipping lane coordinate (lat/lon). Asks for 7-day forecast: max wind speed, max precipitation, wave height. No API key. No rate limit. Completely free.</div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Evaluates each lane against thresholds</div>
+        <div class="step-desc">Wind &gt; 60 km/h → critical. Wind 40–60 → elevated. Wave height &gt; 4m → elevated. Precipitation &gt; 50mm → monitor. Each lane gets a severity level and a reason string.</div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">Streams log lines to the UI</div>
+        <div class="step-desc">As each lane resolves, yields a log line immediately via SSE. The agent panel lights up lane by lane — judges see it thinking in real time. Deliberate 250ms delay between lines for demo effect.</div>
+      </div>
+    </div>
+
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <div class="step-title">Emits structured result</div>
+        <div class="step-desc">Returns risky_lanes list + lane_details dict with exact wind/wave values. Orchestrator uses this to color shipping lanes on the map and add a weather signal to the probability score.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="grid3">
+    <div class="stat"><div class="stat-val">7</div><div class="stat-lbl">Lanes monitored</div></div>
+    <div class="stat"><div class="stat-val">0</div><div class="stat-lbl">API keys needed</div></div>
+    <div class="stat"><div class="stat-val">~3s</div><div class="stat-lbl">Avg completion time</div></div>
+  </div>
+</div>
+
+<div id="pane-apis" class="pane">
+  <div class="label">Primary API</div>
+
+  <div class="api-card">
+    <div class="api-name">
+      <i class="ti ti-cloud-storm" style="font-size:16px" aria-hidden="true"></i>
+      Open-Meteo
+      <span class="api-badge pl">Fully free · no key</span>
+    </div>
+    <div class="api-desc">Open-source weather API. Covers marine weather, wave height, wind speed, precipitation. Unlimited requests. No account needed. Updated hourly. This is your primary source — use it for everything.</div>
+    <div class="api-url">https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=windspeed_10m_max,precipitation_sum&forecast_days=7</div>
+  </div>
+
+  <div class="api-card">
+    <div class="api-name">
+      <i class="ti ti-waves" style="font-size:16px" aria-hidden="true"></i>
+      Open-Meteo Marine API
+      <span class="api-badge pl">Fully free · no key</span>
+    </div>
+    <div class="api-desc">Separate endpoint from the same provider. Gives wave height, swell period, ocean current direction. Use this alongside the main forecast endpoint for shipping-lane accuracy. Critical for detecting typhoon swell.</div>
+    <div class="api-url">https://marine-api.open-meteo.com/v1/marine?latitude={lat}&longitude={lon}&daily=wave_height_max,swell_wave_height_max</div>
+  </div>
+
+  <div class="label" style="margin-top:14px">Backup API (if Open-Meteo is down)</div>
+
+  <div class="api-card">
+    <div class="api-name">
+      <i class="ti ti-cloud" style="font-size:16px" aria-hidden="true"></i>
+      Open Weather Map
+      <span class="api-badge pm">Free tier · key required</span>
+    </div>
+    <div class="api-desc">1,000 free calls/day. Good fallback for wind and precipitation. Doesn't have marine-specific wave data but useful as a second opinion. Free key from openweathermap.org takes 30 seconds to get.</div>
+    <div class="api-url">https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={OWM_KEY}</div>
+  </div>
+
+  <div class="api-card">
+    <div class="api-name">
+      <i class="ti ti-tornado" style="font-size:16px" aria-hidden="true"></i>
+      NOAA / NHC (typhoon tracking)
+      <span class="api-badge pl">Fully free · no key</span>
+    </div>
+    <div class="api-desc">National Hurricane Center RSS/JSON feed. Use this specifically to detect named storms in the Pacific and Indian Ocean. Parse the active storm list and check if any track intersects your shipping lanes. This is your typhoon early warning.</div>
+    <div class="api-url">https://www.nhc.noaa.gov/CurrentStorms.json</div>
+  </div>
+
+  <div class="card card-warn" style="margin-top:14px">
+    <div class="label">Hackathon note</div>
+    <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.7">For demo day, Open-Meteo is all you need. It's free, no key, no rate limit. Add OWM as a fallback if you have time. NOAA typhoon tracking is the bonus feature that makes judges nod — adds maybe 45 minutes to implement and looks very impressive. Prioritize only after the core 3 agents are stable.</div>
+  </div>
+</div>
+
+<div id="pane-lanes" class="pane">
+  <div class="label">The 7 shipping lanes to monitor</div>
+  <div style="font-size:11px;color:var(--color-text-tertiary);margin-bottom:10px">Click any lane to see why it matters for supply chains</div>
+
+  <div id="lane-list">
+    <div class="lane-row" onclick="showLane(0)">
+      <div class="lane-dot" style="background:#E24B4A"></div>
+      <div class="lane-name">Taiwan Strait</div>
+      <div class="lane-coords">24.5°N, 119.5°E</div>
+      <div class="lane-why">Semiconductors, electronics — TSMC, Foxconn</div>
+      <div class="pill ph">Critical</div>
+    </div>
+    <div class="lane-row" onclick="showLane(1)">
+      <div class="lane-dot" style="background:#EF9F27"></div>
+      <div class="lane-name">Red Sea / Bab-el-Mandeb</div>
+      <div class="lane-coords">12.5°N, 43.3°E</div>
+      <div class="lane-why">Europe–Asia gateway, oil, consumer goods</div>
+      <div class="pill pm">Elevated</div>
+    </div>
+    <div class="lane-row" onclick="showLane(2)">
+      <div class="lane-dot" style="background:#1D9E75"></div>
+      <div class="lane-name">Strait of Malacca</div>
+      <div class="lane-coords">2.5°N, 102.0°E</div>
+      <div class="lane-why">60% of world trade passes through. Oil from Middle East to Asia.</div>
+      <div class="pill pl">Monitor</div>
+    </div>
+    <div class="lane-row" onclick="showLane(3)">
+      <div class="lane-dot" style="background:#1D9E75"></div>
+      <div class="lane-name">Suez Canal</div>
+      <div class="lane-coords">30.5°N, 32.3°E</div>
+      <div class="lane-why">12% of global trade. Key for Europe–Asia container ships.</div>
+      <div class="pill pl">Monitor</div>
+    </div>
+    <div class="lane-row" onclick="showLane(4)">
+      <div class="lane-dot" style="background:#1D9E75"></div>
+      <div class="lane-name">South China Sea</div>
+      <div class="lane-coords">15.0°N, 114.0°E</div>
+      <div class="lane-why">Typhoon corridor. Vietnam, Philippines manufacturing routes.</div>
+      <div class="pill pl">Monitor</div>
+    </div>
+    <div class="lane-row" onclick="showLane(5)">
+      <div class="lane-dot" style="background:#1D9E75"></div>
+      <div class="lane-name">Cape of Good Hope</div>
+      <div class="lane-coords">-34.3°S, 18.5°E</div>
+      <div class="lane-why">Alt route when Suez is blocked. 14 extra days. Extreme southern weather.</div>
+      <div class="pill pl">Monitor</div>
+    </div>
+    <div class="lane-row" onclick="showLane(6)">
+      <div class="lane-dot" style="background:#1D9E75"></div>
+      <div class="lane-name">Strait of Hormuz</div>
+      <div class="lane-coords">26.5°N, 56.3°E</div>
+      <div class="lane-why">20% of global oil. Petrochemicals for plastics manufacturing.</div>
+      <div class="pill pl">Monitor</div>
+    </div>
+  </div>
+
+  <div id="lane-detail" style="display:none;margin-top:12px">
+    <div class="card card-info">
+      <div class="label" id="ld-name"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+        <div><div style="font-size:10px;color:var(--color-text-tertiary)">Coordinates</div><div style="font-size:12px;font-family:var(--font-mono)" id="ld-coords"></div></div>
+        <div><div style="font-size:10px;color:var(--color-text-tertiary)">Cargo types at risk</div><div style="font-size:12px" id="ld-cargo"></div></div>
+        <div><div style="font-size:10px;color:var(--color-text-tertiary)">Why it matters</div><div style="font-size:12px" id="ld-why"></div></div>
+        <div><div style="font-size:10px;color:var(--color-text-tertiary)">Typical risk season</div><div style="font-size:12px" id="ld-season"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pane-logic" class="pane">
+  <div class="label">Threshold logic — when does a lane become "risky"?</div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="thresh-row">
+      <div class="thresh-metric">Wind speed</div>
+      <div style="flex:1;font-size:11px;color:var(--color-text-secondary)">
+        <div style="margin-bottom:4px"><span class="pill pl">&lt; 40 km/h</span> Clear — normal ops</div>
+        <div style="margin-bottom:4px"><span class="pill pm">40–60 km/h</span> Elevated — monitor closely</div>
+        <div><span class="pill ph">&gt; 60 km/h</span> Critical — vessel delays likely</div>
+      </div>
+    </div>
+    <div class="thresh-row">
+      <div class="thresh-metric">Wave height</div>
+      <div style="flex:1;font-size:11px;color:var(--color-text-secondary)">
+        <div style="margin-bottom:4px"><span class="pill pl">&lt; 2.5m</span> Clear</div>
+        <div style="margin-bottom:4px"><span class="pill pm">2.5–4m</span> Elevated — heavy cargo affected</div>
+        <div><span class="pill ph">&gt; 4m</span> Critical — most vessels restricted</div>
+      </div>
+    </div>
+    <div class="thresh-row">
+      <div class="thresh-metric">Precipitation</div>
+      <div style="flex:1;font-size:11px;color:var(--color-text-secondary)">
+        <div style="margin-bottom:4px"><span class="pill pl">&lt; 25mm/day</span> Clear</div>
+        <div style="margin-bottom:4px"><span class="pill pm">25–50mm</span> Monitor — port loading slows</div>
+        <div><span class="pill ph">&gt; 50mm</span> Elevated — flood risk at port</div>
+      </div>
+    </div>
+    <div class="thresh-row">
+      <div class="thresh-metric">Named storm nearby</div>
+      <div style="flex:1;font-size:11px;color:var(--color-text-secondary)">
+        <div style="margin-bottom:4px"><span class="pill ph">Any category</span> Immediately critical — override all other signals</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">How severity maps to the orchestrator</div>
+  <div class="card card-info">
+    <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+      The weather agent contributes a <strong style="color:var(--color-text-primary)">weather_risk_score</strong> (0–1.0) to the orchestrator. It's calculated as:<br><br>
+      <span style="font-family:var(--font-mono);font-size:11px">score = (critical_lanes × 0.4) + (elevated_lanes × 0.2)</span><br><br>
+      The orchestrator Claude prompt receives this score alongside the other agents' outputs and weighs it into the final probability. Weather alone rarely exceeds 30% weight — it amplifies financial and news signals rather than standing alone.
+    </div>
+  </div>
+</div>
+
+<div id="pane-code" class="pane">
+  <div class="label">Full weather.py</div>
+  <div class="mono">
+<span class="k">import</span> httpx, asyncio, os<br>
+<span class="k">from</span> agents.base <span class="k">import</span> BaseAgent<br>
+<span class="k">from</span> fallbacks <span class="k">import</span> WEATHER_FALLBACK<br><br>
+
+SHIPPING_LANES = {<br>
+&nbsp;&nbsp;<span class="s">"Taiwan Strait"</span>:        (<span class="s">24.5</span>,  <span class="s">119.5</span>),<br>
+&nbsp;&nbsp;<span class="s">"Red Sea"</span>:               (<span class="s">12.5</span>,  <span class="s">43.3</span>),<br>
+&nbsp;&nbsp;<span class="s">"Strait of Malacca"</span>:     (<span class="s">2.5</span>,   <span class="s">102.0</span>),<br>
+&nbsp;&nbsp;<span class="s">"Suez Canal"</span>:            (<span class="s">30.5</span>,  <span class="s">32.3</span>),<br>
+&nbsp;&nbsp;<span class="s">"South China Sea"</span>:       (<span class="s">15.0</span>,  <span class="s">114.0</span>),<br>
+&nbsp;&nbsp;<span class="s">"Cape of Good Hope"</span>:     (<span class="s">-34.3</span>, <span class="s">18.5</span>),<br>
+&nbsp;&nbsp;<span class="s">"Strait of Hormuz"</span>:      (<span class="s">26.5</span>,  <span class="s">56.3</span>),<br>
+}<br><br>
+
+<span class="k">def</span> severity(wind, wave, rain):<br>
+&nbsp;&nbsp;<span class="k">if</span> wind > <span class="s">60</span> <span class="k">or</span> wave > <span class="s">4.0</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">return</span> <span class="s">"critical"</span><br>
+&nbsp;&nbsp;<span class="k">if</span> wind > <span class="s">40</span> <span class="k">or</span> wave > <span class="s">2.5</span> <span class="k">or</span> rain > <span class="s">50</span>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">return</span> <span class="s">"elevated"</span><br>
+&nbsp;&nbsp;<span class="k">return</span> <span class="s">"clear"</span><br><br>
+
+<span class="k">class</span> WeatherAgent(BaseAgent):<br>
+&nbsp;&nbsp;name = <span class="s">"weather"</span><br><br>
+&nbsp;&nbsp;<span class="k">async def</span> _execute(self, company, scenario):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">yield</span> self._event(<span class="s">"status"</span>, <span class="s">"scanning"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log=<span class="s">"▸ Checking 7 shipping lanes..."</span>)<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;risky, details = [], {}<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">async with</span> httpx.AsyncClient() <span class="k">as</span> client:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">for</span> lane, (lat, lon) <span class="k">in</span> SHIPPING_LANES.items():<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="c"># fetch forecast + marine in parallel</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wx, mx = <span class="k">await</span> asyncio.gather(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client.get(<span class="s">"https://api.open-meteo.com/v1/forecast"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;params={<span class="s">"latitude"</span>:lat,<span class="s">"longitude"</span>:lon,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="s">"daily"</span>:<span class="s">"windspeed_10m_max,precipitation_sum"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="s">"forecast_days"</span>:<span class="s">7</span>,<span class="s">"timezone"</span>:<span class="s">"UTC"</span>},timeout=<span class="s">8</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client.get(<span class="s">"https://marine-api.open-meteo.com/v1/marine"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;params={<span class="s">"latitude"</span>:lat,<span class="s">"longitude"</span>:lon,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="s">"daily"</span>:<span class="s">"wave_height_max"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="s">"forecast_days"</span>:<span class="s">7</span>,<span class="s">"timezone"</span>:<span class="s">"UTC"</span>},timeout=<span class="s">8</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w = wx.json()[<span class="s">"daily"</span>]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;m = mx.json().get(<span class="s">"daily"</span>, {})<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wind = <span class="k">max</span>(w.get(<span class="s">"windspeed_10m_max"</span>,[<span class="s">0</span>]))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rain = <span class="k">max</span>(w.get(<span class="s">"precipitation_sum"</span>,[<span class="s">0</span>]))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wave = <span class="k">max</span>(m.get(<span class="s">"wave_height_max"</span>,[<span class="s">0</span>]))<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sev = severity(wind, wave, rain)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;details[lane] = {<span class="s">"wind"</span>:wind,<span class="s">"wave"</span>:wave,<span class="s">"rain"</span>:rain,<span class="s">"severity"</span>:sev,<span class="s">"lat"</span>:lat,<span class="s">"lon"</span>:lon}<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">if</span> sev != <span class="s">"clear"</span>: risky.append(lane)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;icon = <span class="s">"▸"</span> <span class="k">if</span> sev==<span class="s">"clear"</span> <span class="k">else</span> <span class="s">"⚠"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">yield</span> self._event(<span class="s">"log"</span>, <span class="s">"live"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log=<span class="k">f</span><span class="s">"{icon} {lane}: {wind:.0f}km/h wind · {wave:.1f}m swell"</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">await</span> asyncio.sleep(<span class="s">0.25</span>) <span class="c"># pacing for demo</span><br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">yield</span> self._event(<span class="s">"result"</span>, <span class="s">"done"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log=<span class="k">f</span><span class="s">"▸ {len(risky)} lanes at risk of {len(SHIPPING_LANES)} checked"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data={<span class="s">"risky_lanes"</span>:risky,<span class="s">"lane_details"</span>:details})<br><br>
+
+&nbsp;&nbsp;<span class="k">async def</span> _fallback(self, company, scenario):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">for</span> line <span class="k">in</span> WEATHER_FALLBACK.get(scenario, WEATHER_FALLBACK[<span class="s">"default"</span>]):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">yield</span> self._event(<span class="s">"log"</span>, <span class="s">"live"</span>, log=line)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">await</span> asyncio.sleep(<span class="s">0.3</span>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k">yield</span> self._event(<span class="s">"result"</span>, <span class="s">"done"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;log=<span class="s">"▸ Weather checked (cached)"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data={<span class="s">"risky_lanes"</span>:[<span class="s">"Taiwan Strait"</span>],<span class="s">"lane_details"</span>:{}})<br>
+  </div>
+</div>
+
+<div id="pane-sim" class="pane">
+  <div class="label">Simulate agent output</div>
+  <div class="sim-wrap">
+    <div class="slider-row">
+      <div class="slider-lbl"><i class="ti ti-wind" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>Wind speed (km/h)</div>
+      <input type="range" min="0" max="120" value="35" step="1" id="sl-wind" oninput="runSim()">
+      <div class="slider-val" id="vl-wind">35</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-lbl"><i class="ti ti-waves" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>Wave height (m)</div>
+      <input type="range" min="0" max="10" value="1.2" step="0.1" id="sl-wave" oninput="runSim()">
+      <div class="slider-val" id="vl-wave">1.2</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-lbl"><i class="ti ti-cloud-rain" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>Precipitation (mm/day)</div>
+      <input type="range" min="0" max="120" value="10" step="1" id="sl-rain" oninput="runSim()">
+      <div class="slider-val" id="vl-rain">10</div>
+    </div>
+    <div class="slider-row">
+      <div class="slider-lbl"><i class="ti ti-tornado" style="font-size:13px;margin-right:4px" aria-hidden="true"></i>Named storm nearby</div>
+      <select id="sl-storm" onchange="runSim()" style="flex:1;height:28px;font-size:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);padding:0 8px">
+        <option value="none">None</option>
+        <option value="typhoon">Typhoon (Cat 1–2)</option>
+        <option value="super">Super Typhoon (Cat 4–5)</option>
+      </select>
+      <div class="slider-val" id="vl-storm" style="display:none"></div>
+    </div>
+
+    <div class="sim-output" id="sim-out"></div>
+
+    <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
+      <div id="sev-badge" style="font-size:13px;font-weight:500;padding:4px 12px;border-radius:20px"></div>
+      <div style="font-size:12px;color:var(--color-text-secondary)">Weather risk score contributes <span id="weight-pct" style="font-weight:500;color:var(--color-text-primary)">0%</span> to final probability</div>
+    </div>
+  </div>
+
+  <button class="run" onclick="sendPrompt('Show me how to add NOAA typhoon tracking to the weather agent so it detects named storms near shipping lanes')">Add typhoon tracking to weather.py ↗</button>
+</div>
+
+</div>
+
+<script>
+const LANE_DATA = [
+  {name:'Taiwan Strait',coords:'24.5°N, 119.5°E',cargo:'Semiconductors, electronics (TSMC, Foxconn, MediaTek)',why:'Narrowest major strait in East Asia. Typhoon corridor May–Nov.',season:'May–November typhoon season'},
+  {name:'Red Sea / Bab-el-Mandeb',coords:'12.5°N, 43.3°E',cargo:'Consumer goods, oil, LNG, automobiles',why:'Only sea route connecting Indian Ocean to Mediterranean without Cape detour.',season:'Year-round geopolitical + Jun–Sep monsoon'},
+  {name:'Strait of Malacca',coords:'2.5°N, 102.0°E',cargo:'Oil (Middle East→Asia), LNG, container goods',why:'Narrowest point 2.8km wide. No viable alternative for supertankers.',season:'Oct–Dec Northeast monsoon, reduced piracy risk'},
+  {name:'Suez Canal',coords:'30.5°N, 32.3°E',cargo:'12% of global trade — all types',why:'Shortcut saves 14 days vs Cape of Good Hope. Very exposed to regional politics.',season:'Year-round (geopolitical, not weather)'},
+  {name:'South China Sea',coords:'15.0°N, 114.0°E',cargo:'Vietnam/Philippines manufacturing exports, raw materials',why:'Typhoon genesis region. 30+ named storms annually originate here.',season:'May–November typhoon season'},
+  {name:'Cape of Good Hope',coords:'34.3°S, 18.5°E',cargo:'Everything when Suez is blocked',why:'Extreme southern ocean weather. 6–8m waves common. Only alternative to Suez.',season:'June–August austral winter storms'},
+  {name:'Strait of Hormuz',coords:'26.5°N, 56.3°E',cargo:'20% of global oil, petrochemicals, LNG',why:'35km wide. Iran can close with mines/blockade. Plastics, packaging supply chains.',season:'Year-round (geopolitical risk primary)'},
+];
+
+function showLane(i) {
+  const d = LANE_DATA[i];
+  document.getElementById('ld-name').textContent = d.name;
+  document.getElementById('ld-coords').textContent = d.coords;
+  document.getElementById('ld-cargo').textContent = d.cargo;
+  document.getElementById('ld-why').textContent = d.why;
+  document.getElementById('ld-season').textContent = d.season;
+  document.getElementById('lane-detail').style.display = 'block';
+}
+
+function sw(btn, id) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('pane-'+id).classList.add('on');
+}
+
+function runSim() {
+  const wind = parseFloat(document.getElementById('sl-wind').value);
+  const wave = parseFloat(document.getElementById('sl-wave').value);
+  const rain = parseFloat(document.getElementById('sl-rain').value);
+  const storm = document.getElementById('sl-storm').value;
+
+  document.getElementById('vl-wind').textContent = Math.round(wind);
+  document.getElementById('vl-wave').textContent = wave.toFixed(1);
+  document.getElementById('vl-rain').textContent = Math.round(rain);
+
+  let sev, sevLabel, sevStyle, weight;
+  if (storm !== 'none') {
+    sev = 'critical'; sevLabel = 'Critical — storm override';
+    sevStyle = 'background:#FCEBEB;color:#A32D2D';
+    weight = storm === 'super' ? 40 : 30;
+  } else if (wind > 60 || wave > 4.0) {
+    sev = 'critical'; sevLabel = 'Critical';
+    sevStyle = 'background:#FCEBEB;color:#A32D2D'; weight = 30;
+  } else if (wind > 40 || wave > 2.5 || rain > 50) {
+    sev = 'elevated'; sevLabel = 'Elevated';
+    sevStyle = 'background:#FAEEDA;color:#633806'; weight = 18;
+  } else {
+    sev = 'clear'; sevLabel = 'Clear';
+    sevStyle = 'background:#EAF3DE;color:#27500A'; weight = 5;
+  }
+
+  const windIcon  = wind > 60 ? 'hi' : wind > 40 ? 'warn' : 'ok';
+  const waveIcon  = wave > 4  ? 'hi' : wave > 2.5 ? 'warn' : 'ok';
+  const rainIcon  = rain > 50 ? 'hi' : rain > 25 ? 'warn' : 'ok';
+  const stormLine = storm !== 'none'
+    ? `<div class="sim-line"><span class="hi">⚠ Named storm detected — ${storm === 'super' ? 'Super Typhoon Cat 4–5' : 'Typhoon Cat 1–2'} → override to CRITICAL</span></div>`
+    : '';
+
+  document.getElementById('sim-out').innerHTML = `
+    <div class="sim-line"><span class="${windIcon}">▸ wind: ${Math.round(wind)} km/h — ${wind>60?'CRITICAL':wind>40?'elevated':'clear'}</span></div>
+    <div class="sim-line"><span class="${waveIcon}">▸ wave: ${wave.toFixed(1)}m — ${wave>4?'CRITICAL':wave>2.5?'elevated':'clear'}</span></div>
+    <div class="sim-line"><span class="${rainIcon}">▸ rain: ${Math.round(rain)}mm/day — ${rain>50?'elevated':rain>25?'monitor':'clear'}</span></div>
+    ${stormLine}
+    <div class="sim-line dim">▸ severity() → "${sev}"</div>
+    <div class="sim-line dim">▸ weather_risk_score = ${(weight/100).toFixed(2)}</div>
+  `;
+
+  const badge = document.getElementById('sev-badge');
+  badge.textContent = sevLabel;
+  badge.style.cssText = sevStyle + ';padding:4px 12px;border-radius:20px;font-size:12px;';
+  document.getElementById('weight-pct').textContent = weight + '%';
+}
+
+runSim();
+</script>

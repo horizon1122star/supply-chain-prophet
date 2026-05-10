@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Hanken+Grotesk:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "surface-variant": "#273647",
+                "surface-dim": "#051424",
+                "on-secondary-container": "#b3b4c0",
+                "surface-container-highest": "#273647",
+                "on-surface-variant": "#c2c6d6",
+                "primary-fixed-dim": "#adc6ff",
+                "on-tertiary-container": "#2a2929",
+                "on-primary-container": "#00285d",
+                "surface-container-lowest": "#010f1f",
+                "error-container": "#93000a",
+                "background": "#051424",
+                "on-tertiary-fixed-variant": "#484646",
+                "tertiary": "#c9c6c5",
+                "tertiary-container": "#939090",
+                "surface": "#051424",
+                "surface-container": "#122131",
+                "on-primary": "#002e6a",
+                "primary-fixed": "#d8e2ff",
+                "surface-bright": "#2c3a4c",
+                "secondary": "#c4c6d1",
+                "inverse-on-surface": "#233143",
+                "error": "#ffb4ab",
+                "on-secondary": "#2d3039",
+                "on-tertiary": "#313030",
+                "tertiary-fixed": "#e6e1e1",
+                "outline-variant": "#424754",
+                "on-surface": "#f8f9fa",
+                "secondary-container": "#444650",
+                "on-background": "#d4e4fa",
+                "inverse-primary": "#005ac2",
+                "on-secondary-fixed": "#181b24",
+                "inverse-surface": "#d4e4fa",
+                "tertiary-fixed-dim": "#c9c6c5",
+                "on-tertiary-fixed": "#1c1b1b",
+                "outline": "#8c909f",
+                "on-error-container": "#ffdad6",
+                "on-primary-fixed-variant": "#004395",
+                "surface-container-low": "#0d1c2d",
+                "surface-container-high": "#1c2b3c",
+                "on-secondary-fixed-variant": "#444650",
+                "on-primary-fixed": "#001a42",
+                "secondary-fixed": "#e0e2ee",
+                "surface-tint": "#adc6ff",
+                "on-error": "#690005",
+                "primary-container": "#4d8eff",
+                "secondary-fixed-dim": "#c4c6d1",
+                "primary": "#adc6ff",
+                "panel-bg": "#2B2A2A"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "gutter": "12px",
+                "base": "8px",
+                "unit": "4px",
+                "tight": "4px",
+                "container-padding": "16px",
+                "comfortable": "24px"
+            },
+            "fontFamily": {
+                "body-lg": ["Hanken Grotesk"],
+                "data-mono": ["JetBrains Mono"],
+                "label-xs": ["Hanken Grotesk"],
+                "body-md": ["Hanken Grotesk"],
+                "headline-md": ["Hanken Grotesk"],
+                "display": ["Hanken Grotesk"],
+                "headline-lg": ["Hanken Grotesk"],
+                "label-sm": ["Hanken Grotesk"],
+                "label-caps": ["JetBrains Mono"],
+                "ui-control": ["Hanken Grotesk"],
+                "data-table": ["JetBrains Mono"],
+                "body-sm": ["Hanken Grotesk"],
+                "display-lg": ["Hanken Grotesk"]
+            },
+            "fontSize": {
+                "label-caps": ["0.75rem", {"lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "500"}],
+                "ui-control": ["0.75rem", {"lineHeight": "1.0", "fontWeight": "600"}],
+                "data-table": ["0.8125rem", {"lineHeight": "1.5", "fontWeight": "400"}],
+                "body-sm": ["0.875rem", {"lineHeight": "1.6", "fontWeight": "400"}],
+                "display-lg": ["2.5rem", {"lineHeight": "1.2", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .panel-bg-custom {
+            background-color: #2B2A2A;
+        }
+        .flashlight-glow {
+            position: relative;
+            overflow: hidden;
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .flashlight-glow::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+            z-index: 10;
+        }
+        .flashlight-glow::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent);
+            pointer-events: none;
+        }
+        .scanline {
+            background: linear-gradient(to bottom, transparent 50%, rgba(173, 198, 255, 0.02) 50%);
+            background-size: 100% 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-sm selection:bg-primary/30 min-h-screen flex flex-col overflow-hidden scanline">
+<!-- TopBar -->
+<header class="h-14 flex items-center px-gutter panel-bg-custom border-b border-outline-variant/40 z-50 flashlight-glow">
+<div class="flex items-center gap-4 w-full">
+<span class="font-label-caps text-label-caps font-bold text-white uppercase tracking-widest whitespace-nowrap">LOGISTICS MISSION CONTROL</span>
+<div class="flex-grow relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/60 text-sm" data-icon="terminal">terminal</span>
+<input class="w-full bg-black/40 border border-outline-variant/40 rounded px-10 py-1.5 text-data-table font-data-table focus:border-primary focus:ring-0 placeholder:text-white/20 uppercase text-white" placeholder="QUERY GLOBAL SUPPLY CHAIN STATE..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary font-label-caps text-label-caps px-6 h-9 flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+            INITIATE SCAN
+            <span class="material-symbols-outlined text-sm" data-icon="radar">radar</span>
+</button>
+</div>
+</header>
+<main class="flex-grow flex overflow-hidden">
+<!-- Main Content Area -->
+<div class="flex-grow flex flex-col overflow-y-auto custom-scrollbar p-gutter space-y-gutter">
+<!-- Global Map Visualization -->
+<section class="h-[500px] panel-bg-custom rounded-lg relative overflow-hidden group flashlight-glow">
+<div class="absolute inset-0 opacity-40">
+<img alt="Dark tactical world map" class="w-full h-full object-cover grayscale invert contrast-125 opacity-10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5Gc_nsGSngCTPwFjlonzJy5Dz37rfrDmwJepO4zmWWKLADaUsLkLxlhRVHUaN-INts8d_f9QkqZJlyTcYXlxJ5ckcGZJs9dVEdJy0BfqWwU5PAqAyPRjoEBqKMXbwge2FJ-uSc7MrY7nw4ag1q4RCkcudzEHA5omSCHgql51Mvq_xFFmPlZlVMpaHXGYPafxx9xbav2KEX7Jt_Sw2lRn4zz3ICW956kb47Op2Rp0_I1MgmTYME_djuxQjgrgCN_ldRhWBOgaYBvk"/>
+</div>
+<!-- Tactical Overlays -->
+<div class="absolute top-4 left-4 flex flex-col gap-2">
+<div class="bg-black/40 px-3 py-1.5 rounded flex items-center gap-3 border border-white/10">
+<div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
+<span class="font-label-caps text-[10px] text-white">SYSTEMS NOMINAL: 99.4% UPTIME</span>
+</div>
+<div class="bg-black/40 px-3 py-1.5 rounded flex items-center gap-3 border border-white/10">
+<div class="w-2 h-2 rounded-full bg-error animate-pulse"></div>
+<span class="font-label-caps text-[10px] text-error">ACTIVE DISRUPTIONS: 14</span>
+</div>
+</div>
+<div class="absolute bottom-4 right-4 flex gap-2">
+<div class="bg-black/40 p-2 flex flex-col items-center border border-white/10">
+<span class="text-[10px] font-label-caps text-white/50">LAT</span>
+<span class="text-xs font-data-table text-primary">34.0522 N</span>
+</div>
+<div class="bg-black/40 p-2 flex flex-col items-center border border-white/10">
+<span class="text-[10px] font-label-caps text-white/50">LNG</span>
+<span class="text-xs font-data-table text-primary">118.2437 W</span>
+</div>
+</div>
+</section>
+<!-- 3x2 Grid: Live Agent Feeds -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Feed: News -->
+<div class="panel-bg-custom p-4 rounded-lg flex flex-col gap-2 flashlight-glow">
+<div class="flex justify-between items-center border-b border-white/10 pb-2">
+<span class="font-label-caps text-label-caps text-white flex items-center gap-2"><span class="material-symbols-outlined text-xs" data-icon="rss_feed">rss_feed</span> News</span>
+<span class="text-[10px] font-data-table text-white/40">LIVE_SEC_4</span>
+</div>
+<div class="space-y-2 h-32">
+<p class="text-[11px] font-data-table border-l-2 border-secondary pl-2 py-0.5 text-white/90">PANAMA CANAL DRAFT RESTRICTIONS TIGHTENED UNTIL Q4.</p>
+<p class="text-[11px] font-data-table border-l-2 border-white/20 pl-2 py-0.5 text-white/50">ROTTERDAM PORT STRIKE THREAT ESCALATES TO LOCKOUT.</p>
+<p class="text-[11px] font-data-table border-l-2 border-error pl-2 py-0.5 text-white/90">SHANGHAI TERMINAL 4 EXPERIENCING UNPLANNED OUTAGE.</p>
+</div>
+</div>
+<!-- Feed: Financial -->
+<div class="panel-bg-custom p-4 rounded-lg flex flex-col gap-2 flashlight-glow">
+<div class="flex justify-between items-center border-b border-white/10 pb-2">
+<span class="font-label-caps text-label-caps text-white flex items-center gap-2"><span class="material-symbols-outlined text-xs" data-icon="show_chart">show_chart</span> Finance</span>
+<span class="text-[10px] font-data-table text-white/40">SYNC_READY</span>
+</div>
+<div class="space-y-2 h-32">
+<div class="flex justify-between items-end border-b border-white/5 pb-1">
+<span class="text-[10px] font-label-caps text-white/70">BRENT_CRUDE</span>
+<span class="text-xs font-data-table text-white">$84.22 <span class="text-[10px] text-secondary">+1.2%</span></span>
+</div>
+<div class="flex justify-between items-end border-b border-white/5 pb-1">
+<span class="text-[10px] font-label-caps text-white/70">BALTIC_DRY</span>
+<span class="text-xs font-data-table text-white">1,842 <span class="text-[10px] text-error">-2.4%</span></span>
+</div>
+<div class="flex justify-between items-end border-b border-white/5 pb-1">
+<span class="text-[10px] font-label-caps text-white/70">USD_CNY</span>
+<span class="text-xs font-data-table text-white">7.241 <span class="text-[10px] text-white/30">STABLE</span></span>
+</div>
+</div>
+</div>
+<!-- Feed: Weather -->
+<div class="panel-bg-custom p-4 rounded-lg flex flex-col gap-2 flashlight-glow">
+<div class="flex justify-between items-center border-b border-white/10 pb-2">
+<span class="font-label-caps text-label-caps text-white flex items-center gap-2"><span class="material-symbols-outlined text-xs" data-icon="thunderstorm">thunderstorm</span> Weather</span>
+<span class="text-[10px] font-data-table text-white/40">SCAN_AUTO</span>
+</div>
+<div class="flex items-center gap-4 h-32">
+<div class="flex-grow flex flex-col">
+<span class="text-2xl font-display-lg text-white">942 hPa</span>
+<span class="text-[10px] font-label-caps text-white/50 uppercase">Typhoon 'Bolaven' Tracking</span>
+</div>
+<div class="w-16 h-16 border border-white/10 flex items-center justify-center bg-white/5 rounded">
+<span class="material-symbols-outlined text-3xl text-white animate-pulse" data-icon="cyclone">cyclone</span>
+</div>
+</div>
+</div>
+<!-- Feed: Logistics -->
+<div class="panel-bg-custom p-4 rounded-lg flashlight-glow">
+<div class="flex justify-between items-center border-b border-white/10 pb-2 mb-2">
+<span class="font-label-caps text-label-caps text-white">Logistics</span>
+<div class="flex gap-1">
+<div class="w-1 h-3 bg-primary"></div>
+<div class="w-1 h-3 bg-primary/40"></div>
+<div class="w-1 h-3 bg-primary/20"></div>
+</div>
+</div>
+<div class="space-y-1.5 h-32 overflow-hidden">
+<div class="bg-black/20 px-2 py-1 flex justify-between">
+<span class="text-[10px] font-data-table text-white/80">VESSEL: EVER_GIVEN_II</span>
+<span class="text-[10px] font-data-table text-primary">TRANSIT</span>
+</div>
+<div class="bg-black/20 px-2 py-1 flex justify-between">
+<span class="text-[10px] font-data-table text-white/80">FLIGHT: CX882</span>
+<span class="text-[10px] font-data-table text-tertiary">DELAY_2H</span>
+</div>
+</div>
+</div>
+<!-- Feed: Memory -->
+<div class="panel-bg-custom p-4 rounded-lg flashlight-glow">
+<div class="flex justify-between items-center border-b border-white/10 pb-2 mb-2">
+<span class="font-label-caps text-label-caps text-white/70">Memory</span>
+<span class="text-[10px] font-data-table text-white/40">MOD: LLaMA_3</span>
+</div>
+<div class="text-[11px] font-data-table text-white/80 italic h-32 leading-relaxed">
+                    Historical analysis suggests high correlation with 2021-Q3 congestion events. 24% probability of EU-Central warehouse overflow within 48 hours.
+                </div>
+</div>
+<!-- Feed: Geopolitical -->
+<div class="panel-bg-custom p-4 rounded-lg border-l-2 border-error/50 flashlight-glow">
+<div class="flex justify-between items-center border-b border-white/10 pb-2 mb-2">
+<span class="font-label-caps text-label-caps text-error">Geopolitics</span>
+<span class="text-[10px] font-data-table bg-error/10 text-error px-1">HIGH_RISK</span>
+</div>
+<div class="space-y-3 h-32">
+<div class="relative pt-1">
+<div class="flex mb-1 items-center justify-between">
+<span class="text-[10px] font-label-caps text-white/70">POLITICAL_STABILITY</span>
+<span class="text-[10px] font-data-table text-error">42%</span>
+</div>
+<div class="overflow-hidden h-1 text-xs flex rounded bg-white/10">
+<div class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-error" style="width:42%"></div>
+</div>
+</div>
+<p class="text-[10px] font-data-table text-white/60">Civil unrest in Region 7 causing trade hub disruptions.</p>
+</div>
+</div>
+</section>
+<!-- Bottom: Recommendations Table -->
+<section class="panel-bg-custom rounded-lg flex flex-col flashlight-glow">
+<div class="px-4 py-2 border-b border-white/10 flex justify-between items-center bg-black/10">
+<h3 class="font-label-caps text-label-caps text-white">Recommendations</h3>
+<div class="flex gap-4">
+<span class="text-[10px] font-data-table text-secondary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> RECOMMENDED
+                    </span>
+<span class="text-[10px] font-data-table text-error flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> CRITICAL
+                    </span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-black/20">
+<th class="p-3 font-label-caps text-[10px] text-white/40 tracking-wider">EVENT_ID</th>
+<th class="p-3 font-label-caps text-[10px] text-white/40 tracking-wider">DISRUPTION_SOURCE</th>
+<th class="p-3 font-label-caps text-[10px] text-white/40 tracking-wider">IMPACT_EST</th>
+<th class="p-3 font-label-caps text-[10px] text-white/40 tracking-wider">RECOVERY_TTL</th>
+<th class="p-3 font-label-caps text-[10px] text-white/40 tracking-wider">ACTION_REQUIRED</th>
+</tr>
+</thead>
+<tbody class="font-data-table text-xs">
+<tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+<td class="p-3 text-primary">#ERR-9021</td>
+<td class="p-3 text-white">SUEZ_CANAL_SANDSTORM</td>
+<td class="p-3 text-error">$14.2M / DAY</td>
+<td class="p-3 text-white/80">72.0H</td>
+<td class="p-3">
+<button class="bg-secondary/10 border border-secondary text-secondary font-ui-control px-3 py-1 hover:bg-secondary hover:text-on-secondary transition-all">REROUTE_AFRICA</button>
+</td>
+</tr>
+<tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+<td class="p-3 text-primary">#ERR-8842</td>
+<td class="p-3 text-white">CHIP_FABS_HWS_OS</td>
+<td class="p-3 text-error">$8.5M / DAY</td>
+<td class="p-3 text-white/80">168.0H</td>
+<td class="p-3">
+<button class="bg-primary/10 border border-primary text-primary font-ui-control px-3 py-1 hover:bg-primary hover:text-on-primary transition-all">ACTIVATE_STOCKPILE</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Right Sidebar -->
+<aside class="w-80 flex flex-col panel-bg-custom border-l border-white/10 shrink-0 flashlight-glow">
+<!-- Panel 1: Raw Material Pricing -->
+<div class="p-4 border-b border-white/10 flex-1 flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-caps text-label-caps text-white">Commodity Prices</span>
+<span class="material-symbols-outlined text-sm text-white/40" data-icon="inventory">inventory</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between group">
+<div class="flex flex-col">
+<span class="text-[10px] font-label-caps text-white/50">LITHIUM_OH</span>
+<span class="text-sm font-data-table text-white">$42,100 / T</span>
+</div>
+<div class="h-6 w-16 bg-error/10 border-l border-error flex items-center px-1">
+<span class="text-[10px] font-data-table text-error">+4.2%</span>
+</div>
+</div>
+<div class="flex items-center justify-between group">
+<div class="flex flex-col">
+<span class="text-[10px] font-label-caps text-white/50">COPPER_CATHODE</span>
+<span class="text-sm font-data-table text-white">$8,842 / T</span>
+</div>
+<div class="h-6 w-16 bg-secondary/10 border-l border-secondary flex items-center px-1">
+<span class="text-[10px] font-data-table text-secondary">-1.8%</span>
+</div>
+</div>
+<div class="flex items-center justify-between group">
+<div class="flex flex-col">
+<span class="text-[10px] font-label-caps text-white/50">POLYMER_ABS</span>
+<span class="text-sm font-data-table text-white">$1,350 / T</span>
+</div>
+<div class="h-6 w-16 bg-white/5 border-l border-white/20 flex items-center px-1">
+<span class="text-[10px] font-data-table text-white/40">0.0%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Panel 2: Market Stocks -->
+<div class="p-4 border-b border-white/10 flex-1 flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-caps text-label-caps text-white">Stock Market</span>
+<span class="material-symbols-outlined text-sm text-white/40" data-icon="bar_chart">bar_chart</span>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="bg-black/20 p-2 border border-white/5 rounded">
+<span class="text-[9px] font-label-caps block text-white/40">MAERSK.B</span>
+<span class="text-xs font-data-table text-error">▼ 2.1%</span>
+</div>
+<div class="bg-black/20 p-2 border border-white/5 rounded">
+<span class="text-[9px] font-label-caps block text-white/40">FDX.NYSE</span>
+<span class="text-xs font-data-table text-secondary">▲ 0.4%</span>
+</div>
+</div>
+</div>
+<!-- Panel 3: Risk Predictions -->
+<div class="p-4 flex-1 flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-caps text-label-caps text-white">Risk Predictions</span>
+<span class="material-symbols-outlined text-sm text-white/40" data-icon="query_stats">query_stats</span>
+</div>
+<div class="space-y-4">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-end">
+<span class="text-[10px] font-label-caps text-white/70">SUPPLIER: ACME_TECH</span>
+<span class="text-[10px] font-data-table text-error">92% PROB</span>
+</div>
+<div class="w-full bg-white/10 h-1 rounded-full overflow-hidden">
+<div class="bg-error h-full" style="width: 92%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-end">
+<span class="text-[10px] font-label-caps text-white/70">SUPPLIER: VOLT_CORE</span>
+<span class="text-[10px] font-data-table text-tertiary">65% PROB</span>
+</div>
+<div class="w-full bg-white/10 h-1 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full" style="width: 65%"></div>
+</div>
+</div>
+</div>
+<button class="mt-auto w-full border border-white/10 py-2 font-label-caps text-[10px] text-white/60 hover:text-white hover:border-white transition-all uppercase">
+                EXPORT FULL ANALYTICS
+            </button>
+</div>
+</aside>
+</main>
+<!-- Bottom Status Bar -->
+<footer class="h-8 bg-black border-t border-white/10 px-gutter flex items-center justify-between shrink-0">
+<div class="flex gap-4">
+<span class="flex items-center gap-2 text-[10px] font-data-table text-white/40">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> API_STATUS: ACTIVE
+        </span>
+<span class="flex items-center gap-2 text-[10px] font-data-table text-white/40">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> NETWORK_LOAD: 2.1 Gb/s
+        </span>
+</div>
+<div class="flex gap-4">
+<span class="text-[10px] font-data-table text-white/40 uppercase">User: Cmdr_Operator_7</span>
+<span class="text-[10px] font-data-table text-white/40">2024-10-24 14:22:01 UTC</span>
+</div>
+</footer>
+</body></html>

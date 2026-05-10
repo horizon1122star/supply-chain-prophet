@@ -1,0 +1,56 @@
+{
+  "ALUMINUM": {
+    "price": "2612.50",
+    "change": "12.00",
+    "percent_change": "0.46",
+    "timestamp": 1715200000
+  },
+  "XAU/USD": {
+    "price": "2360.25",
+    "change": "-4.10",
+    "percent_change": "-0.17",
+    "timestamp": 1715200000
+  },
+  "XCU/USD": {
+    "price": "4.65",
+    "change": "0.08",
+    "percent_change": "1.75",
+    "timestamp": 1715200000
+  },
+  "LITHIUM": {
+    "price": "14200.00",
+    "change": "50.00",
+    "percent_change": "0.35",
+    "timestamp": 1715200000
+  },
+  "XPD/USD": {
+    "price": "980.50",
+    "change": "15.30",
+    "percent_change": "1.58",
+    "timestamp": 1715200000
+  },
+  "XPT/USD": {
+    "price": "975.20",
+    "change": "2.40",
+    "percent_change": "0.25",
+    "timestamp": 1715200000
+  },
+  "WTIOIL": {
+    "price": "78.45",
+    "change": "-0.20",
+    "percent_change": "-0.25",
+    "timestamp": 1715200000
+  },
+  "BRENTOIL": {
+    "price": "83.10",
+    "change": "-0.15",
+    "percent_change": "-0.18",
+    "timestamp": 1715200000
+  },
+  "NATGAS": {
+    "price": "2.25",
+    "change": "0.05",
+    "percent_change": "2.27",
+    "timestamp": 1715200000
+  }
+}

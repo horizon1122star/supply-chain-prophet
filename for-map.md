@@ -1,0 +1,8 @@
+Leaflet is the leading open-source JavaScript library for interactive maps, weighing just 42KB of JS — that's your map renderer, non-negotiable. On top of it you stack two free tile layers: OpenStreetMap for the base and OpenSeaMap, which adds nautical data including port information, AIS, and seamark symbols — that's what makes it look like a real maritime chart instead of Google Maps. SeaVantageLeaflet
+For live vessel positions, AISStream.io tracks ship movements via WebSocket API in real-time and for free — you subscribe to bounding boxes and receive vessel position, identity, port calls and more. Sign up with GitHub, get the key in two minutes. You just need to register for a free API key and connect via WebSocket with a bounding box subscription. OpenSeaMapGitHub
+The install:
+bashnpm install leaflet react-leaflet
+# Add to .env.local:
+NEXT_PUBLIC_AISSTREAM_KEY=your_key
+What makes the demo land: The map has to feel alive during the scan, not just after. The vessel dots from AISStream start appearing the moment the user hits Run Scan — before any agents finish. Then lane colors update when weather agent finishes, port markers update when logistics agent finishes, and finally the risk circles and supplier connection lines drop when the verdict arrives. Each stage of the scan produces a visible map change. That progressive reveal is what makes judges lean forward.
+The one thing that takes the map from good to unforgettable is the dashed line from company HQ to each flagged supplier — Apple → TSMC → Taiwan Strait, all connected visually. That's 4 lines of Leaflet polyline code and it's the single most screenshot-worthy moment in your entire demo.
